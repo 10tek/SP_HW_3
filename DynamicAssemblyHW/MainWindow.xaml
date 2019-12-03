@@ -1,0 +1,24 @@
+﻿<Window x:Class="DynamicAssemblyHW.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DynamicAssemblyHW"
+        mc:Ignorable="d"
+        Title="Калькулятор факториалов" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="161*"/>
+            <RowDefinition Height="80*"/>
+            <RowDefinition Height="193*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="250*"/>
+            <ColumnDefinition Width="150*"/>
+        </Grid.ColumnDefinitions>
+        <Label Content="Введите 10 целых чисел через запятую" FontSize="35" Grid.ColumnSpan="2"></Label>
+        <TextBox x:Name="numbersTB" Grid.Row="1" Grid.ColumnSpan="2" Height="50" FontSize="35"></TextBox>
+        <Label x:Name="resultL" Grid.Column="0" Grid.Row="2" Height="50"></Label>
+        <Button Grid.Column="1" Grid.Row="2" Content="Посчитать" FontSize="35" Click="CalcBtnClick"></Button>
+    </Grid>
+</Window>
