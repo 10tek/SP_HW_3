@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,6 +21,8 @@ namespace DynamicAssemblyHW
     /// </summary>
     public partial class MainWindow : Window
     {
+        private string path = @"C:\Users\ОралбаевГ\source\repos\Calculator\Calculator\bin\Debug\netcoreapp3.0\Calculator.dll";
+
         public MainWindow()
         {
             InitializeComponent();
@@ -32,8 +35,8 @@ namespace DynamicAssemblyHW
                 MessageBox.Show("Поле пустое!");
                 return;
             }
-            numbersTB.Text.Remove(' ');
-            var numberStrings = numbersTB.Text.Split(',');
+            var numbers = numbersTB.Text.Replace(" ", "");
+            var numberStrings = numbers.Split(',');
             var numberList = new List<int>();
             foreach (var number in numberStrings)
             {
@@ -53,6 +56,27 @@ namespace DynamicAssemblyHW
                 return;
             }
 
+            try
+            {
+                var asm = Assembly.LoadFrom(path);
+
+                Type t = asm.GetType("Calculator.Calc", true, true);
+
+                // создаем экземпляр класса Program
+                var obj = Activator.CreateInstance(t);
+
+                // получаем метод GetResult
+                var method = t.GetMethod("GetFactorials");
+
+                // вызываем метод, передаем ему значения для параметров и получаем результат
+                var result = method.Invoke(obj, new object[] { numberList });
+                numberList = result as List<int>;
+                numberList.ForEach(x => resultL.Content += x + ", ");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
 
         }
     }
