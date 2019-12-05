@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -21,7 +22,7 @@ namespace DynamicAssemblyHW
     /// </summary>
     public partial class MainWindow : Window
     {
-        private string path = @"C:\Users\ОралбаевГ\source\repos\Calculator\Calculator\bin\Debug\netcoreapp3.0\Calculator.dll";
+        private string path = @"C:\Users\ОралбаевГ\source\repos\ProjectForSP_HW3\Calculator\bin\Debug\netcoreapp3.0\Calculator.dll";
 
         public MainWindow()
         {
@@ -37,7 +38,7 @@ namespace DynamicAssemblyHW
             }
             var numbers = numbersTB.Text.Replace(" ", "");
             var numberStrings = numbers.Split(',');
-            var numberList = new List<int>();
+            var numberList = new List<long>();
             foreach (var number in numberStrings)
             {
                 if (int.TryParse(number, out var num))
@@ -55,29 +56,38 @@ namespace DynamicAssemblyHW
                 MessageBox.Show("Вы ввели не 10 чисел");
                 return;
             }
+            WeakReference weakReference;
+            numberList = CountFactorials(out weakReference, numberList);
+            numberList.ForEach(x => resultL.Content += x + ", ");
+        }
 
+        private List<long> CountFactorials(out WeakReference weakReference, List<long> numberList)
+        {
             try
             {
-                var asm = Assembly.LoadFrom(path);
+                var context = new CustomAssemblyLoadContext();
+                var assemblyPath = System.IO.Path.Combine(Directory.GetCurrentDirectory(), path);
+                var assembly = context.LoadFromAssemblyPath(assemblyPath);
 
-                Type t = asm.GetType("Calculator.Calc", true, true);
+                weakReference = new WeakReference(context, true);
 
-                // создаем экземпляр класса Program
-                var obj = Activator.CreateInstance(t);
+                var calculatorType = assembly.GetType("Calculator.Calc", true, true);
+                var obj = Activator.CreateInstance(calculatorType);
 
-                // получаем метод GetResult
-                var method = t.GetMethod("GetFactorials");
+                var greetMethod = calculatorType.GetMethod("GetFactorials");
+                var result = greetMethod.Invoke(obj, new object[] { numberList });
+                var currentDomain = AppDomain.CurrentDomain.GetAssemblies();
+                context.Unload();
+                currentDomain = AppDomain.CurrentDomain.GetAssemblies();
 
-                // вызываем метод, передаем ему значения для параметров и получаем результат
-                var result = method.Invoke(obj, new object[] { numberList });
-                numberList = result as List<int>;
-                numberList.ForEach(x => resultL.Content += x + ", ");
+                return result as List<long>;
             }
             catch (Exception ex)
             {
+                weakReference = null;
                 MessageBox.Show(ex.Message);
+                return null;
             }
-
         }
     }
 }
