@@ -22,7 +22,7 @@ namespace DynamicAssemblyHW
     /// </summary>
     public partial class MainWindow : Window
     {
-        private string path = @"C:\Users\ОралбаевГ\source\repos\ProjectForSP_HW3\Calculator\bin\Debug\netcoreapp3.0\Calculator.dll";
+        private string path = @"D:\repos\ProjectForSP_HW3\Calculator\bin\Debug\netcoreapp3.0\Calculator.dll";
 
         public MainWindow()
         {
@@ -45,19 +45,26 @@ namespace DynamicAssemblyHW
                 {
                     numberList.Add(num);
                 }
-                else
-                {
-                    MessageBox.Show("Некорректные данные!");
-                    return;
-                }
             }
             if (numberList.Count != 10)
             {
-                MessageBox.Show("Вы ввели не 10 чисел");
+                MessageBox.Show("Вы ввели не корректные данные или недостаточное кол-во чисел");
                 return;
             }
+            
+            //Для проверки.
+            var currentDomain = AppDomain.CurrentDomain.GetAssemblies();
             WeakReference weakReference;
             numberList = CountFactorials(out weakReference, numberList);
+            for (int i = 0; weakReference.IsAlive && (i < 10); i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
+            //Для проверки. 
+            currentDomain = AppDomain.CurrentDomain.GetAssemblies();
+
             numberList.ForEach(x => resultL.Content += x + ", ");
         }
 
@@ -76,9 +83,7 @@ namespace DynamicAssemblyHW
 
                 var greetMethod = calculatorType.GetMethod("GetFactorials");
                 var result = greetMethod.Invoke(obj, new object[] { numberList });
-                var currentDomain = AppDomain.CurrentDomain.GetAssemblies();
                 context.Unload();
-                currentDomain = AppDomain.CurrentDomain.GetAssemblies();
 
                 return result as List<long>;
             }
